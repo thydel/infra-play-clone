@@ -6,10 +6,13 @@
   gather_facts: False
   tags: clone
 
-  vars_files: [ vars/passwords.yml ]
+  vars_files:
+    - vars/passwords.yml
+    - vars/ext/legacy/oxa_vcenter.yml
 
   roles:
     
+    - role: augeas
     - role: clone
 
       validate_certs: False
