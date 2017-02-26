@@ -29,6 +29,18 @@
       dhcpd: super1
       bastion: super1
 
+- name: Rename first interface
+  hosts: *hosts
+  tags: rename-iface
+
+  vars_files:
+    - vars/ext/legacy/oxa_networks.yml
+
+  roles:
+    - role: if-rename-first
+      admin_network: admin2
+      admin_network_gw: 10.1.2.248
+
 - name: Allocate disks
   hosts: *hosts
   gather_facts: False
