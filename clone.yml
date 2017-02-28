@@ -52,6 +52,26 @@
       admin_network: admin2
       admin_network_gw: 10.1.2.248
 
+- name: Commit clone and rename changes
+  hosts: *hosts
+  tags: commit-clone
+
+  tasks:
+    - include_role: { name: amr-hg-commit }
+
+    - git_config:
+        name: user.email
+        scope: local
+        repo: .
+      register: git_config
+      delegate_to: localhost
+
+    - hg_commit:
+        cwd: /etc
+        com: Clone and basic renaming steps
+        user: '{{ git_config.config_value }}'
+      become: True
+
 - name: Commit DHCP changes
   hosts: super1
   tags: commit-dhcp
@@ -64,6 +84,7 @@
         scope: local
         repo: .
       register: git_config
+      delegate_to: localhost
 
     - hg_commit:
         cwd: /etc
