@@ -55,42 +55,34 @@
 - name: Commit clone and rename changes
   hosts: *hosts
   tags: commit-clone
-
   tasks:
-    - include_role: { name: amr-hg-commit }
-
-    - git_config:
-        name: user.email
-        scope: local
-        repo: .
-      register: git_config
-      delegate_to: localhost
-
-    - hg_commit:
-        cwd: /etc
-        com: Clone and basic renaming steps
-        user: '{{ git_config.config_value }}'
-      become: True
+    - include: tasks/hg-com-etc.yml
+      vars: { com: Clone and basic renaming steps }
 
 - name: Commit DHCP changes
   hosts: super1
   tags: commit-dhcp
+  tasks:
+    - include: tasks/hg-com-etc.yml
+      vars: { com: new node on admin2 via DHCP }
+
+- name: Adds ifaces
+  hosts: *hosts
+  tags: ifaces
+
+  vars_files:
+    - vars/passwords.yml
+    - vars/ext/legacy/oxa_vcenter.yml
+    - vars/ext/legacy/oxa_networks.yml
 
   tasks:
-    - include_role: { name: amr-hg-commit }
 
-    - git_config:
-        name: user.email
-        scope: local
-        repo: .
-      register: git_config
-      delegate_to: localhost
+    - include: tasks/hg-com-etc.yml
+      vars: { com: before applying ifadd role }
 
-    - hg_commit:
-        cwd: /etc
-        com: new node on admin2 via DHCP
-        user: '{{ git_config.config_value }}'
-      become: True
+
+    - include: tasks/hg-com-etc.yml
+      vars: { com: after applying ifadd role }
 
 - name: Allocate disks
   hosts: *hosts
