@@ -105,17 +105,12 @@
 
   vars:
     pysphere: localhost
+    validate_certs: False
+    diskpassword: '{{ luks_password }}'
 
   roles:
 
     - { role: hg-etc-com, com: before applying diskadd role }
-
-    - role: vsphere-disk-add
-      validate_certs: False
-      unit: 1
-      device: sdb
-      name: space
-      size: 10
-      diskpassword: '{{ luks_password }}'
-
+    - { role: vsphere-disk-add, unit: 1, device: sdb, name: space, size: 10 }
+    - { role: vsphere-disk-add, unit: 2, device: sdc, name: space2, size: 10 }
     - { role: hg-etc-com, com: after applying diskadd role }
