@@ -12,6 +12,7 @@
       check_mode: False
       tags: always
 
+
 - name: Clone a VM and basic renaming steps
   hosts: &hosts tst5
   gather_facts: False
@@ -40,6 +41,7 @@
       dhcpd: super1
       bastion: super1
 
+
 - name: Rename first interface
   hosts: *hosts
   tags: rename-iface
@@ -52,12 +54,14 @@
       admin_network: admin2
       admin_network_gw: 10.1.2.248
 
+
 - name: Commit clone and rename changes
   hosts: *hosts
   tags: commit-clone
   tasks:
     - include: tasks/hg-com-etc.yml
       vars: { com: Clone and basic renaming steps }
+
 
 - name: Commit DHCP changes
   hosts: super1
@@ -66,23 +70,27 @@
     - include: tasks/hg-com-etc.yml
       vars: { com: new node on admin2 via DHCP }
 
+
 - name: Adds ifaces
   hosts: *hosts
   tags: ifaces
 
   vars_files:
+
     - vars/passwords.yml
+    - vars/ext/ips.yml
     - vars/ext/legacy/oxa_vcenter.yml
     - vars/ext/legacy/oxa_networks.yml
 
-  tasks:
+  vars:
+    pysphere: localhost
 
-    - include: tasks/hg-com-etc.yml
-      vars: { com: before applying ifadd role }
+  roles:
 
+    - { role: hg-etc-com, com: before applying ifadd role }
+    - { role: vsphere-if-add, network: front2, default_gw_net: front2, validate_certs: False }
+    - { role: hg-etc-com, com: after applying ifadd role }
 
-    - include: tasks/hg-com-etc.yml
-      vars: { com: after applying ifadd role }
 
 - name: Allocate disks
   hosts: *hosts
