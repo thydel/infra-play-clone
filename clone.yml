@@ -97,14 +97,25 @@
   gather_facts: False
   tags: disks
 
-- name: Show vaults
-  hosts: localhost
-  gather_facts: False
-  tags: show
+  vars_files:
 
-  vars_files: [ vars/passwords.yml ]
+    - vars/passwords.yml
+    - vars/ext/legacy/oxa_vcenter.yml
+    - vars/ext/legacy/oxa_vm_default.yml
 
-  tasks:
+  vars:
+    pysphere: localhost
 
-    - debug: { var: vcenter_password }
-    - debug: { var: luks_password }
+  roles:
+
+    - { role: hg-etc-com, com: before applying diskadd role }
+
+    - role: vsphere-disk-add
+      validate_certs: False
+      unit: 1
+      device: sdb
+      name: space
+      size: 10
+      diskpassword: '{{ luks_password }}'
+
+    - { role: hg-etc-com, com: after applying diskadd role }
