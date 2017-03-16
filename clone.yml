@@ -12,7 +12,6 @@
       check_mode: False
       tags: always
 
-
 - name: Clone a VM and basic renaming steps
   hosts: &hosts tst5
   gather_facts: False
@@ -22,24 +21,33 @@
     - vars/passwords.yml
     - vars/ext/legacy/oxa_vcenter.yml
     - vars/ext/legacy/oxa_networks.yml
+    - vars/ext/clones.json
+
+  vars:
+    clone: '{{ oxa_clones[inventory_hostname] }}'
 
   roles:
-    
-    - role: augeas
     - role: clone
 
       validate_certs: False
       password: '{{ vcenter_password }}'
 
-      template_name: debian8.template13
-      template_hostname: debian8
+      template_name:     '{{ clone.template }}'
+      template_hostname: '{{ template_name.split(".")[0] }}'
 
-      vm_memory_mb: 1024
-      vm_num_cpus: 1
+      vm_memory_mb: '{{ clone.memory }}'
+      vm_num_cpus:  '{{ clone.cpus }}'
 
-      pysphere: localhost
-      dhcpd: super1
-      bastion: super1
+      pysphere: '{{ clone.pysphere }}'
+      dhcpd:    '{{ clone.dhcpd }}'
+      bastion:  '{{ clone.bastion }}'
+
+    - { role: hg-etc-com, com: after applying clone role }
+
+  post_tasks:
+    - include_role: { name: hg-etc-com }
+      vars: { com: 'new node {{ clone.name }} on admin2 via DHCP' }
+      delegate_to: '{{ clone.dhcpd }}'
 
 
 - name: Rename first interface
@@ -54,21 +62,7 @@
       admin_network: admin2
       admin_network_gw: 10.1.2.248
 
-
-- name: Commit clone and rename changes
-  hosts: *hosts
-  tags: commit-clone
-  tasks:
-    - include: tasks/hg-com-etc.yml
-      vars: { com: Clone and basic renaming steps }
-
-
-- name: Commit DHCP changes
-  hosts: super1
-  tags: commit-dhcp
-  tasks:
-    - include: tasks/hg-com-etc.yml
-      vars: { com: new node on admin2 via DHCP }
+    - { role: hg-etc-com, com: after applying clone if-rename-first }
 
 
 - name: Adds ifaces
@@ -81,18 +75,28 @@
     - vars/ext/ips.yml
     - vars/ext/legacy/oxa_vcenter.yml
     - vars/ext/legacy/oxa_networks.yml
+    - vars/ext/clones.json
 
   vars:
-    pysphere: localhost
+    clone: '{{ oxa_clones[inventory_hostname] }}'
 
-  roles:
+  tasks:
+    - { include_role: { name: hg-etc-com }, vars: { com: before applying ifadd role }}
 
-    - { role: hg-etc-com, com: before applying ifadd role }
-    - { role: vsphere-if-add, network: front2, default_gw_net: front2, validate_certs: False }
-    - { role: hg-etc-com, com: after applying ifadd role }
+    - include_role: { name: vsphere-if-add }
+      with_items:   '{{ clone.networks }}'
+      loop_control: { loop_var: net, label: '{{ net }}' }
+      name: adds ifaces loop
+      vars:
+        validate_certs: False
+        pysphere:       '{{ clone.pysphere }}'
+        network:        '{{ net }}'
+        default_gw_net: '{{ clone.default_gw_net }}'
+
+    - { include_role: { name: hg-etc-com }, vars: { com: after applying ifadd role }}
 
 
-- name: Allocate disks
+- name: Allocates disks
   hosts: *hosts
   gather_facts: False
   tags: disks
@@ -102,15 +106,25 @@
     - vars/passwords.yml
     - vars/ext/legacy/oxa_vcenter.yml
     - vars/ext/legacy/oxa_vm_default.yml
+    - vars/ext/clones.json
 
   vars:
-    pysphere: localhost
-    validate_certs: False
-    diskpassword: '{{ luks_password }}'
+    clone: '{{ oxa_clones[inventory_hostname] }}'
 
-  roles:
+  tasks:
+    - { include_role: { name: hg-etc-com }, vars: { com: before applying diskadd role }}
 
-    - { role: hg-etc-com, com: before applying diskadd role }
-    - { role: vsphere-disk-add, unit: 1, device: sdb, name: space, size: 10 }
-    - { role: vsphere-disk-add, unit: 2, device: sdc, name: space2, size: 10 }
-    - { role: hg-etc-com, com: after applying diskadd role }
+    - include_role: { name: vsphere-disk-add }
+      with_items:   '{{ clone.disks }}'
+      loop_control: { loop_var: disk, label: '{{ disk.name }}' }
+      name: adds disks loop
+      vars:
+        validate_certs: False
+        pysphere:       '{{ clone.pysphere }}'
+        diskpassword:   '{{ luks_password }}'
+        unit:           '{{ disk.unit }}'
+        device:         '{{ disk.device }}'
+        name42:         '{{ disk.name }}'
+        size:           '{{ disk.size }}'
+
+    - { include_role: { name: hg-etc-com }, vars: { com: after applying diskadd role }}
