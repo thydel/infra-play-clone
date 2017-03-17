@@ -1,19 +1,23 @@
 #!/usr/bin/env ansible-playbook
 ---
 
-- name: Check ansible version
-  hosts: localhost
-  vars: { min_ansible_version: 2.3.0 }
+- name: &check Check ansible version
+  hosts: all
+  gather_facts: False
   tags: check-version
+  vars: { min_ansible_version: 2.3.0 }
   tasks:
     - fail:
         msg: min ansible version is {{ min_ansible_version }}, ansible version is {{ ansible_version.string }}
       when: ansible_version.string | version_compare(min_ansible_version, 'lt')
       check_mode: False
+      run_once: True
+      delegate_to: localhost
       tags: always
+      name: *check
 
 - name: Clone a VM and basic renaming steps
-  hosts: &hosts tst5
+  hosts: &hosts tst5:satscva1:satscvb1:prephp7a1:profntd1:presqldmpa1:prosqldmpa1:prostrb1
   gather_facts: False
   tags: clone
 
