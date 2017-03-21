@@ -125,7 +125,7 @@
       vars:
         validate_certs: False
         pysphere:       '{{ clone.pysphere }}'
-        diskpassword:   '{{ luks_password }}'
+        diskpassword:   '{{ luks_passwords[disk.key] }}'
         unit:           '{{ disk.unit }}'
         device:         '{{ disk.device }}'
         name42:         '{{ disk.name }}'
