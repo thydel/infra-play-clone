@@ -17,7 +17,7 @@
       name: *check
 
 - name: Clone a VM and basic renaming steps
-  hosts: &hosts tst5:satscva1:satscvb1:prephp7a1:profntd1:presqldmpa1:prosqldmpa1:prostrb1
+  hosts: &hosts g_new
   gather_facts: False
   tags: clone
 
@@ -130,5 +130,6 @@
         device:         '{{ disk.device }}'
         name42:         '{{ disk.name }}'
         size:           '{{ disk.size }}'
+        lvuse:          '{{ disk.lvuse }}'
 
     - { include_role: { name: hg-etc-com }, vars: { com: after applying diskadd role }}
