@@ -1,1 +1,13 @@
 *~
+.cache
+.retry
+inventory
+log
+plugins
+roles
+ansible-cfg
+ansible.cfg
+ext
+vault-pass.py
+private-repos.yml
+keys.yml
