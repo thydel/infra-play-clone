@@ -68,12 +68,11 @@
   tags: rename-iface
 
   vars_files:
-    - vars/ext/legacy/oxa_networks.yml
+    - ext/clone/out/oxa/networks.js
 
   roles:
     - role: if-rename-first
-      admin_network: admin2
-      admin_network_gw: 10.1.2.248
+      admin_network_gw: '{{ Networks[admin_network].gw }}'
 
     - { role: hg-etc-com, com: after applying clone if-rename-first }
 
