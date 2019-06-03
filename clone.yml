@@ -82,15 +82,15 @@
   tags: ifaces
 
   vars_files:
-
-    - vars/passwords.yml
-    - vars/ext/ips.yml
-    - vars/ext/legacy/oxa_vcenter.yml
-    - vars/ext/legacy/oxa_networks.yml
-    - vars/ext/clones.json
+    - paths.yml
+    - ext/ips/legacy/ips.js
+    - ext/clone/out/oxa/clones.js
+    - ext/clone/out/oxa/vcenter.js
+    - ext/clone/out/oxa/networks.js
 
   vars:
     clone: '{{ oxa_clones[inventory_hostname] }}'
+    vcenter_password_terms: '{{ vcenter_passname_id + " directory=" + password_store_dir }}'
 
   tasks:
     - { include_role: { name: hg-etc-com }, vars: { com: before applying ifadd role }}
@@ -101,6 +101,7 @@
       name: adds ifaces loop
       vars:
         validate_certs: False
+        vcenter_password: '{{ lookup("passwordstore", vcenter_password_terms) }}'
         pysphere:       '{{ clone.pysphere }}'
         network:        '{{ net }}'
         default_gw_net: '{{ clone.default_gw_net }}'
