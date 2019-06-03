@@ -22,19 +22,20 @@
   tags: clone
 
   vars_files:
-    - vars/passwords.yml
-    - vars/ext/legacy/oxa_vcenter.yml
-    - vars/ext/legacy/oxa_networks.yml
-    - vars/ext/clones.json
+    - paths.yml
+    - ext/clone/out/oxa/clones.js
+    - ext/clone/out/oxa/vcenter.js
+    - ext/clone/out/oxa/networks.js
 
   vars:
     clone: '{{ oxa_clones[inventory_hostname] }}'
+    vcenter_password_terms: '{{ vcenter_passname_id + " directory=" + password_store_dir }}'
 
   roles:
     - role: clone
 
       validate_certs: False
-      password: '{{ vcenter_password }}'
+      password: '{{ lookup("passwordstore", vcenter_password_terms) }}'
 
       template_name:     '{{ clone.template }}'
       template_hostname: '{{ template_name.split(".")[0] }}'
@@ -49,9 +50,17 @@
     - { role: hg-etc-com, com: after applying clone role }
 
   post_tasks:
-    - include_role: { name: hg-etc-com }
-      vars: { com: 'new node {{ clone.name }} on admin2 via DHCP' }
-      delegate_to: '{{ clone.dhcpd }}'
+    - add_host:
+        hostname: dhcpd
+        ansible_host: '{{ hostvars[clone.dhcpd].ansible_host }}'
+        ansible_become_pass: '{{ hostvars[clone.dhcpd].ansible_become_pass }}'
+        clone: '{{ clone }}'
+
+- name: Commit dhcpd changes
+  hosts: dhcpd
+  gather_facts: False
+  tags: clone
+  roles: [ { role: hg-etc-com, com: 'new node {{ clone.name }} on admin2 via DHCP' } ]
 
 
 - name: Rename first interface
