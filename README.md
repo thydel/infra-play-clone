@@ -72,3 +72,9 @@ get-priv-repos.yml -e dir=$(pwd)
 make -C ext/inventories main
 rsync -av ext/inventories/inventory .
 ```
+
+# Generate clone data
+
+```
+make -C ext/clone
+```
