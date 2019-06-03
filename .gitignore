@@ -11,3 +11,4 @@ ext
 vault-pass.py
 private-repos.yml
 keys.yml
+.hide/
