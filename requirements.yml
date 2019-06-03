@@ -1,0 +1,24 @@
+---
+
+# ansible-galaxy install -r requirements.yml
+
+- src: https://github.com/thydel/ar-vsphere-clone.git
+  name: clone
+  version: master
+
+- src: https://github.com/thydel/ar-if-rename-first.git
+  name: if-rename-first
+  version: master
+
+- src: https://github.com/thydel/ar-vsphere-if-add.git
+  name: vsphere-if-add
+  version: master
+
+- src: https://github.com/thydel/ar-vsphere-disk-add.git
+  name: vsphere-disk-add
+  version: master
+
+- src: https://github.com/thydel/ar-hg-etc-com.git
+  scm: git
+  name: hg-etc-com
+  version: use-module
