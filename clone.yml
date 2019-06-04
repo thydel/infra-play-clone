@@ -115,14 +115,14 @@
   tags: disks
 
   vars_files:
-
-    - vars/passwords.yml
-    - vars/ext/legacy/oxa_vcenter.yml
-    - vars/ext/legacy/oxa_vm_default.yml
-    - vars/ext/clones.json
+    - paths.yml
+    - ext/clone/out/oxa/clones.js
+    - ext/clone/out/oxa/vcenter.js
+    - ext/clone/out/oxa/vm_default.js
 
   vars:
     clone: '{{ oxa_clones[inventory_hostname] }}'
+    password_terms: '{{ " directory=" + password_store_dir }}'
 
   tasks:
     - { include_role: { name: hg-etc-com }, vars: { com: before applying diskadd role }}
@@ -134,7 +134,8 @@
       vars:
         validate_certs: False
         pysphere:       '{{ clone.pysphere }}'
-        diskpassword:   '{{ luks_passwords[disk.key] }}'
+        vcenter_password: '{{ lookup("passwordstore", vcenter_passname_id + password_terms) }}'
+        diskpassword:   '{{ lookup("passwordstore", "oxalide/luks/" + disk.key + password_terms) }}'
         unit:           '{{ disk.unit }}'
         device:         '{{ disk.device }}'
         name42:         '{{ disk.name }}'
