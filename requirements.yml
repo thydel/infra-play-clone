@@ -4,7 +4,7 @@
 
 - src: https://github.com/thydel/ar-vsphere-clone.git
   name: clone
-  version: master
+  version: tde
 
 - src: https://github.com/thydel/ar-if-rename-first.git
   name: if-rename-first
