@@ -45,7 +45,15 @@ cp ~/usr/thydel.d/ssh-config/keys.yml .
 cp ~/usr/epipar.d/infra-data-repos/private-repos.yml . # Then edit to keep what I need
 ```
 
-# Get private repos
+# Auto Setup
+
+```
+make
+```
+
+# Partial manual setup
+
+## Get private repos
 
 [ansible-get-priv-repos]: https://github.com/thydel/ansible-get-priv-repos "github.com repo"
 
@@ -66,15 +74,23 @@ get-priv-repos.yml -e dir=$(pwd)
 `keys_file` and `workdir`.
 
 
-# Generate and install inventories
+## Generate and install inventories
 
 ```
 make -C ext/inventories
 rsync -av ext/inventories/inventory .
 ```
 
-# Generate clone data
+## Generate clone data
 
 ```
 make -C ext/clone
+```
+
+## Generate ips data
+
+Only via top make
+
+```
+make ips
 ```
