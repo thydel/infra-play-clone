@@ -1,0 +1,40 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: Allocates disks
+  hosts: g_oxa
+  gather_facts: False
+  tags: disks
+
+  vars_files:
+    - paths.yml
+    - ext/clone/out/oxa/clones.js
+    - ext/clone/out/oxa/vcenter.js
+    - ext/clone/out/oxa/vm_default.js
+
+  vars:
+    clone: '{{ oxa_clones[inventory_hostname] }}'
+    password_terms: '{{ " directory=" + password_store_dir }}'
+
+  tasks:
+    - assert: { that: disk_name is defined }
+
+    - { include_role: { name: hg-etc-com }, vars: { com: before applying diskadd role }}
+
+    - include_role: { name: vsphere-disk-add }
+      when: disk.name == disk_name
+      with_items:   '{{ clone.disks }}'
+      loop_control: { loop_var: disk, label: '{{ disk.name }}' }
+      name: adds disks loop
+      vars:
+        validate_certs: False
+        pysphere:       '{{ clone.pysphere }}'
+        vcenter_password: '{{ lookup("passwordstore", vcenter_passname_id + password_terms) }}'
+        diskpassword:   '{{ lookup("passwordstore", "oxalide/luks/" + disk.key + password_terms) }}'
+        unit:           '{{ disk.unit }}'
+        device:         '{{ disk.device }}'
+        name42:         '{{ disk.name }}'
+        size:           '{{ disk.size }}'
+        lvuse:          '{{ disk.lvuse }}'
+
+    - { include_role: { name: hg-etc-com }, vars: { com: after applying diskadd role }}
