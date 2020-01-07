@@ -19,9 +19,56 @@ ansible-cfg.mk median
 Update `.gitignore`
 
 ```
+. <(use-ansible)
 ansible localhost -m setup -a filter=ansible_env | grep PWD # fill the cache with current PWD
 ansible-cfg.yml -e dir=$(pwd) # or tell ansible
 ```
+
+# Install ansible roles
+
+```
+ansible-galaxy install -r requirements.yml
+```
+
+# Use local inventory
+
+```
+rmdir inventory; ln -s /usr/local/etc/epi/inventory
+```
+
+# Choose data-clone source
+
+local
+
+```
+ln -s /usr/local/etc/epi/data/oxa/clones ext
+```
+
+relative
+
+```
+ln -s ../data-clone/out/oxa ext/clones
+```
+
+clone
+
+```
+mkdir -p ext
+env GIT_SSH_COMMAND='ssh -i ~/.ssh/t.delamare@epiconcept.fr' \
+	git clone git@github.com:Epiconcept-Paris/infra-data-clone.git ext/data-clone
+git -C ext/data-clone make
+ln -s ext/data-clone/out/oxa ext/clones
+```
+
+# Choose ips source
+
+local
+
+```
+ln -s /usr/local/etc/epi/data/oxa ext/ips
+```
+
+# Obsolet
 
 # Define private variables
 

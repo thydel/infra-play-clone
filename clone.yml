@@ -23,9 +23,9 @@
 
   vars_files:
     - paths.yml
-    - ext/clone/out/oxa/clones.js
-    - ext/clone/out/oxa/vcenter.js
-    - ext/clone/out/oxa/networks.js
+    - ext/clones/clones.js
+    - ext/clones/vcenter.js
+    - ext/clones/networks.js
 
   vars:
     clone: '{{ oxa_clones[inventory_hostname] }}'
@@ -68,7 +68,7 @@
   tags: rename-iface
 
   vars_files:
-    - ext/clone/out/oxa/networks.js
+    - ext/clones/networks.js
 
   roles:
     - role: if-rename-first
@@ -84,9 +84,9 @@
   vars_files:
     - paths.yml
     - ext/ips/legacy/ips.js
-    - ext/clone/out/oxa/clones.js
-    - ext/clone/out/oxa/vcenter.js
-    - ext/clone/out/oxa/networks.js
+    - ext/clones/clones.js
+    - ext/clones/vcenter.js
+    - ext/clones/networks.js
 
   vars:
     clone: '{{ oxa_clones[inventory_hostname] }}'
@@ -116,9 +116,9 @@
 
   vars_files:
     - paths.yml
-    - ext/clone/out/oxa/clones.js
-    - ext/clone/out/oxa/vcenter.js
-    - ext/clone/out/oxa/vm_default.js
+    - ext/clones/clones.js
+    - ext/clones/vcenter.js
+    - ext/clones/vm_default.js
 
   vars:
     clone: '{{ oxa_clones[inventory_hostname] }}'
