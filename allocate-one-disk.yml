@@ -8,9 +8,9 @@
 
   vars_files:
     - paths.yml
-    - ext/clone/out/oxa/clones.js
-    - ext/clone/out/oxa/vcenter.js
-    - ext/clone/out/oxa/vm_default.js
+    - data/oxa/clones/clones.js
+    - data/oxa/clones/vcenter.js
+    - data/oxa/clones/vm_default.js
 
   vars:
     clone: '{{ oxa_clones[inventory_hostname] }}'
