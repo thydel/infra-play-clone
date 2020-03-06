@@ -2,10 +2,11 @@
 .cache
 .retry
 inventory
+data
 log
 plugins
 roles
-ansible-cfg
+ansible_cfg
 ansible.cfg
 ext
 vault-pass.py
