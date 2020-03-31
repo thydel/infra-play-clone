@@ -1,0 +1,56 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: Activate swap
+  hosts: g_new
+  gather_facts: False
+
+  vars:
+
+    swapdev: /dev/mapper/swap
+
+  tasks:
+
+    - stat: { path: '{{ swapdev }}' }
+      register: path
+      name: stat {{ swapdev }}
+
+    - assert: { that: path.stat.exists }
+      name: fail if no {{ swapdev }}
+
+    - set_fact: { real_swapdev: '{{ swapdev }}' }
+      when: ! path.stat.islnk
+      name: set real_swapdev for non symlink
+
+    - set_fact: { real_swapdev: '{{ path.stat.lnk_source }}' }
+      when: path.stat.islnk
+      name: set real_swapdev for symlink
+
+    - command: swapon --show=NAME --noheading
+      changed_when: False
+      check_mode: False
+      register: swapon
+      become: True
+      name: get active swap devices
+
+    - meta: end_play
+
+    - command: blkid -i {{ swapdev }}
+      register: blkid
+      failed_when: blkid.rc > 2
+      when: swapdev.stat.exists
+      name: see if {{ swapdev }} is a swap device
+
+    - command: &mkswap mkswap {{ swapdev }}
+      when: blkid.rc == 2
+      name: *mkswap
+
+    - lineinfile:
+        dest: /etc/fstab
+        line: '{{ swapdev }} none swap noauto,sw 0 0'
+      name: add {{ swapdev }} to fstab
+
+    - command: &swapon swapon {{ swapdev }}
+      when: (swapon.stdout_lines | select("match", real_swapdev) | list | length) == 0
+      name: *swapon
+
