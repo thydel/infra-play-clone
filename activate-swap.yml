@@ -7,7 +7,9 @@
 
   vars:
 
-    swapdev: /dev/mapper/swap
+    swapname: swap
+    swapdev: /dev/mapper/{{ swapname }}
+    oldswap: /dev/mapper/{{ inventory_hostname }}-swap_1
 
   tasks:
 
@@ -15,7 +17,7 @@
       register: path
       name: stat {{ swapdev }}
 
-    - assert: { that: path.stat.exists }
+    - assert: { quiet: True, that: path.stat.exists }
       name: fail if no {{ swapdev }}
 
     - set_fact: { real_swapdev: '{{ swapdev }}' }
@@ -33,24 +35,58 @@
       become: True
       name: get active swap devices
 
-    - meta: end_play
+    - stat: { path: '{{ oldswap }}' }
+      register: oldpath
+      name: stat {{ oldswap }}
 
-    - command: blkid -i {{ swapdev }}
+    - set_fact: { real_oldswap: '{{ oldpath.stat.lnk_source }}' }
+      name: set real_oldswap
+
+    - command: &swapoff swapoff {{ oldswap }}
+      when: (swapon.stdout_lines | select("match", real_oldswap) | list | length) == 1
+      become: True
+      name: *swapoff
+
+    - replace:
+        dest: /etc/fstab
+        regexp: ^({{ oldswap }})
+        replace: '# \1'
+      become: True
+      name: comment out {{ oldswap }}
+
+    - command: blkid {{ swapdev }}
       register: blkid
       failed_when: blkid.rc > 2
-      when: swapdev.stat.exists
+      changed_when: False
+      check_mode: False
+      become: True
       name: see if {{ swapdev }} is a swap device
 
     - command: &mkswap mkswap {{ swapdev }}
       when: blkid.rc == 2
+      become: True
       name: *mkswap
 
     - lineinfile:
         dest: /etc/fstab
         line: '{{ swapdev }} none swap noauto,sw 0 0'
+      become: True
       name: add {{ swapdev }} to fstab
 
     - command: &swapon swapon {{ swapdev }}
       when: (swapon.stdout_lines | select("match", real_swapdev) | list | length) == 0
+      become: True
       name: *swapon
 
+    - lineinfile:
+        dest: '{{ readme}}'
+        line: '{{ item }}'
+      vars:
+        readme: /etc/README
+      loop:
+        - cryptdisks_start {{ swapname }}
+        - swapon {{ swapdev }}
+      become: True
+      name: Update {{ readme }}
+
+    - meta: end_play
