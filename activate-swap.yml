@@ -8,7 +8,7 @@
   vars:
 
     swapname: swap
-    swapdev: /dev/mapper/{{ swapname }}
+    swapdev: /dev/mapper/{% if crypt is defined %}{{ swapname }}{% else %}{{ inventory_hostname }}--2-swap{% endif %}
     oldswap: /dev/mapper/{{ inventory_hostname }}-swap_1
 
   tasks:
@@ -87,6 +87,7 @@
         - cryptdisks_start {{ swapname }}
         - swapon {{ swapdev }}
       become: True
+      when: crytp is defined
       name: Update {{ readme }}
 
     - meta: end_play
