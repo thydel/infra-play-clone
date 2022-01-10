@@ -7,9 +7,14 @@
   name: clone
   version: tde
 
-- src: https://github.com/thydel/ar-if-rename-first.git
+- src: git@github.com:thydel/ar-if-rename-first.git
+  scm: git
   name: if-rename-first
   version: master
+
+#- src: https://github.com/thydel/ar-if-rename-first.git
+#  name: if-rename-first
+#  version: master
 
 - src: https://github.com/thydel/ar-vsphere-if-add.git
   name: vsphere-if-add
