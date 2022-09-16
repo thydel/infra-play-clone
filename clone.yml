@@ -87,7 +87,8 @@
 
   vars_files:
     - paths.yml
-    - data/oxa/legacy/ips.js
+    # - data/oxa/legacy/ips.js
+    - data-out-2022/ips/legacy/ips.json
     - data/oxa/clones/clones.js
     - data/oxa/clones/vcenter.js
     - data/oxa/clones/networks.js
